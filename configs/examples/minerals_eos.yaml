@@ -1,0 +1,183 @@
+# Example domain config: lower-mantle static EOS (V0, K0, K0').
+# Schemas/prompts: schemas/example/, prompts/example/
+# Run: litcurate run-stage query_generation --config configs/examples/minerals_eos.yaml
+
+run:
+  name: lower_mantle_static_eos_v2
+  user_goal: |
+    Build a database of STATIC equation-of-state parameters for LOWER-MANTLE minerals.
+    Target phases: bridgmanite (Mg,Fe)SiO3 perovskite, ferropericlase / periclase
+    (Mg,Fe)O, post-perovskite, CaSiO3 perovskite (CaPv), and closely related deep-mantle
+    phases (e.g. stishovite when discussed in LM context).
+
+    Primary target parameters: reference / zero-pressure volume (V0 / Vo), zero-pressure
+    bulk modulus (K0 / Ko / B0), and its pressure derivative (K0' / K' / Ko').
+    Include both newly fitted values AND values reported from other studies when the
+    paper lists numeric V0, K0, and/or K0' in text or tables (with provenance when given).
+
+llm:
+  provider: anthropic
+
+search:
+  num_queries: 20
+  provider: anthropic
+  model: claude-sonnet-4-6
+  retrieval_objective: |
+    Retrieve papers likely to report NUMERIC static EOS parameters V0, K0, and/or K0'
+    (aliases: Vo, Ko, B0, K', K'0, etc.) for lower-mantle phases: bridgmanite /
+    MgSiO3 or (Mg,Fe)SiO3 perovskite, ferropericlase / magnesiowüstite / periclase /
+    (Mg,Fe)O / MgO, post-perovskite (PPv), and CaSiO3 perovskite.
+
+    Prioritize Birch-Murnaghan, Vinet, or Murnaghan (and equivalent) static / isothermal
+    EOS fits and tables of EOS parameters. INCLUDE:
+    - primary experimental or theoretical fits from this study
+    - compilations, reviews, and modeling papers that TABULATE or quote V0, K0, K0'
+      values for LM minerals (even if taken from earlier literature)
+    - papers with P-V or P-V-T data reduced to static EOS parameters
+
+    Deprioritize (but do not exclusively optimize against) purely seismic inversions,
+    geodynamic applications with no parameter tables, and pressure-scale-only uses of EOS.
+  merge:
+    strategy: union_dedupe_rank
+    min_query_hits: 1
+    top_k: 2000
+    frequency_weight: 1.0
+    relevance_weight: 1.0
+    citation_weight: 0.1
+  openalex:
+    max_results_per_query: 20
+    per_page: 20
+    year_slices:
+      - year_min: 1990
+        year_max: 1992
+      - year_min: 1993
+        year_max: 1995
+      - year_min: 1996
+        year_max: 1998
+      - year_min: 1999
+        year_max: 2001
+      - year_min: 2002
+        year_max: 2004
+      - year_min: 2005
+        year_max: 2007
+      - year_min: 2008
+        year_max: 2010
+      - year_min: 2011
+        year_max: 2013
+      - year_min: 2014
+        year_max: 2016
+      - year_min: 2017
+        year_max: 2019
+      - year_min: 2020
+        year_max: 2022
+      - year_min: 2023
+        year_max: 2026
+    request_delay_seconds: 1.0
+
+abstract_filter:
+  criteria: |
+    Goal: maximize recall of papers that may contain NUMERIC static EOS parameters
+    V0, K0, and/or K0' (aliases Vo, Ko, B0, K', K'0, …) for LOWER-MANTLE minerals
+    (bridgmanite / Mg-silicate perovskite, ferropericlase/periclase/(Mg,Fe)O, 
+    post-perovskite, CaSiO3 perovskite, related deep-mantle phases).
+
+    KEEP if the abstract suggests any of:
+    - EOS, Birch-Murnaghan, Vinet, Murnaghan, compression, P-V or P-V-T fitting
+    - bulk modulus, K0, K', V0, zero-pressure volume for these phases
+    - high-pressure experiments or DFT/ab initio on these LM phases with elastic/EOS focus
+    - reviews or compilations that may tabulate EOS parameters for mantle minerals
+
+    Numeric values need NOT appear in the abstract.
+
+    ALSO KEEP papers that use or cite previously published EOS parameters if they may
+    still list those parameters numerically in tables or text (compilations, comparisons,
+    thermoelastic models). Do NOT drop solely because parameters may come from earlier work.
+
+    EXCLUDE only when clearly irrelevant:
+    - no connection to mineral EOS / elasticity / compression of LM or high-P mantle phases
+    - pure geochemistry/petrology with no elastic/EOS content
+    - pure seismology/geodynamics with no mineral parameter tables likely
+
+    Favor recall over precision.
+
+  provider: openai_compatible
+  base_url: http://localhost:11434/v1
+  model: qwen3:14b
+  batch_size: 5
+  max_tokens: 8192
+
+download:
+  # Attempt metadata-provided PDF URLs over HTTP (not OA-flag-only).
+  # Paywalled PDFs will still often fail — use litcurate ingest-pdfs for those.
+  unpaywalled_only: false
+  request_delay_seconds: 1.0
+
+conversion:
+  engine: marker
+  device: cuda:0
+
+markdown_clean:
+  strip_references: true
+  strip_acknowledgments: true
+  # EOS tables are frequently in supplements — keep them for extraction.
+  strip_supplementary: false
+  strip_funding: true
+
+pre_extract:
+  enabled: true
+  # One strong signal is enough (OCR often drops a second alias).
+  min_signal_hits: 1
+  regex_signals:
+    - "(?i)Birch[- ]?Murnaghan|BM2|BM3|Vinet|Murnaghan|equation of state|\\bEOS\\b"
+    - "(?i)\\bV\\s*0\\b|\\bV_0\\b|\\bVo\\b|zero[- ]pressure volume|reference volume|unit[- ]cell volume"
+    - "(?i)\\bK\\s*0\\b|\\bK_0\\b|\\bKo\\b|\\bB\\s*0\\b|bulk modulus|isothermal bulk modulus"
+    - "(?i)K['′]?\\s*0|K_0['′]?|\\bK['′]\\b|\\bKo['′]?\\b|pressure derivative|bulk modulus derivative"
+
+fulltext_filter:
+  enabled: true
+  provider: openai_compatible
+  base_url: http://localhost:11434/v1
+  model: qwen3:14b
+  batch_size: 3
+  max_tokens: 8192
+  # Look further into the paper; tables of V0/K0/K' are often not in the first pages.
+  input_max_chars: 20000
+  criteria: |
+    KEEP if the excerpt contains (or strongly indicates) NUMERIC static EOS parameters
+    useful for a lower-mantle database, especially V0 (Vo), K0 (Ko/B0), and/or K0' (K'/Ko'),
+    for bridgmanite / (Mg,Fe)SiO3 perovskite, ferropericlase / (Mg,Fe)O / MgO / periclase,
+    post-perovskite, CaSiO3 perovskite, or closely related deep-mantle phases.
+
+    KEEP all of the following when numeric parameters appear or are clearly tabulated:
+    - New fits from THIS study (Birch-Murnaghan, Vinet, Murnaghan, etc.)
+    - Parameters taken FROM OTHER STUDIES if the paper lists numeric V0, K0, and/or K0'
+      in text or tables (compilations, comparisons, reviews with parameter tables,
+      models that reprint literature EOS constants)
+    - Cases where K0' is fixed/assumed (e.g. K'=4) while V0 and/or K0 are reported
+
+    EXCLUDE only if there is no plausible extractable static EOS parameter content, e.g.:
+    - EOS mentioned only as a pressure scale / calibrant with no LM mineral V0/K0/K' values
+    - Ambient moduli only, with no high-P EOS parameters
+    - Phase diagram / seismology / geodynamics with no mineral EOS numbers
+
+    When unsure but V0/K0/K'-like numbers for LM phases might exist, KEEP (favor recall).
+
+extraction:
+  # Use static-LM prompt that KEEPS literature-tabulated V0/K0/K' as well as new fits.
+  provider: anthropic
+  model: claude-fable-5
+  section_mode: cleaned_markdown
+  markdown_max_chars: 80000
+  schemas:
+    - name: eos_reported
+      format: declarative_yaml
+      path: schemas/example/record.yaml
+      prompt: prompts/example/prompt.md
+      version: "2.1"
+      empty_list_field: eos_entries
+    - name: source
+      path: schemas/example/source.json
+      fill_from: papers_meta
+      skip_when_prior_empty: eos_reported
+
+dry_run: false

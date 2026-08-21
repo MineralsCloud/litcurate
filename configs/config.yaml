@@ -1,0 +1,136 @@
+run:
+  name: lower_mantle_eos_v1
+  user_goal: |
+    Build a database of lower mantle minerals and their equation-of-state (EOS)
+    parameters from experimental and theoretical literature. Focus on bridgmanite,
+    ferropericlase, post-perovskite, and related phases under deep-mantle pressures.
+
+# Screening stages use local Ollama qwen3:14b.
+# Query generation (search) uses Claude Sonnet (same as minerals_eos_updated.yaml).
+llm:
+  provider: openai_compatible
+  base_url: http://localhost:11434/v1   # or http://GPU_HOST:11434/v1 if remote
+
+search:
+  num_queries: 10
+  provider: anthropic
+  model: claude-sonnet-4-6
+  retrieval_objective: |
+    Retrieve primary experimental and theoretical papers likely to report
+    extractable equation-of-state parameterizations for relevant mineral phases.
+    Prioritize studies reporting fitted EOS parameters such as reference volume
+    (V0), bulk modulus (K0), pressure derivative of bulk modulus (K0'), or
+    equivalent thermal EOS parameters. Include papers reporting pressure-volume
+    or pressure-volume-temperature data fitted using EOS models such as
+    Birch-Murnaghan, Vinet, Murnaghan, or thermal EOS formulations.
+  merge:
+    strategy: union_dedupe_rank
+    min_query_hits: 1
+    top_k: 100
+    frequency_weight: 1.0
+    relevance_weight: 1.0
+    citation_weight: 0.1
+  openalex:
+    max_results_per_query: 50
+    per_page: 50
+    # Semantic search caps at 50 hits per query; 3-year slices multiply coverage.
+    year_slices:
+      - year_min: 1990
+        year_max: 2026
+    request_delay_seconds: 1
+
+abstract_filter:
+  criteria: |
+    Keep papers that may contain extractable equation-of-state (EOS) or elastic
+    parameters for lower-mantle minerals or related high-pressure mantle phases.
+
+    KEEP if the abstract suggests the study reports or determines EOS, compression,
+    pressure-volume behavior, density, elasticity, elastic constants, bulk/shear
+    modulus, or related properties using experiments or computational methods such
+    as DFT, ab initio, or molecular dynamics.
+
+    Numeric EOS parameters do NOT need to be explicitly reported in the abstract.
+    Values such as V0, K0, K', G0, or EOS fits may appear only in the full text,
+    tables, figures, or supplementary material.
+
+    EXCLUDE papers clearly unrelated to EOS or elastic properties, reviews without
+    new primary data, geochemistry or petrology-only studies, seismic/geophysical
+    modeling without new mineral-physics results, or studies that only adopt or
+    cite previously published EOS parameters.
+
+    Favor recall over precision. If the abstract provides a reasonable indication
+    that extractable EOS or elastic data may exist in the full paper, KEEP it for
+    full-text screening.
+
+  provider: openai_compatible
+  base_url: http://localhost:11434/v1   # or http://GPU_HOST:11434/v1 if remote
+  model: qwen3:14b
+  batch_size: 5
+  max_tokens: 8192
+
+download:
+  unpaywalled_only: true
+  request_delay_seconds: 1.0
+
+conversion:
+  engine: marker
+  device: cuda:0
+
+markdown_clean:
+  strip_references: true
+  strip_acknowledgments: true
+  strip_supplementary: true
+  strip_funding: true
+
+pre_extract:
+  enabled: true
+  min_signal_hits: 2
+  regex_signals:
+    - "(?i)Birch[- ]?Murnaghan|BM2|BM3|Vinet|Murnaghan|equation of state|\\bEOS\\b"
+    - "(?i)\\bV\\s*0\\b|\\bV_0\\b|zero[- ]pressure volume|reference volume|unit[- ]cell volume"
+    - "(?i)\\bK\\s*0\\b|\\bK_0\\b|K['′]?0|bulk modulus|isothermal bulk modulus"
+    - "(?i)K['′]?\\s*0|K_0['′]?|pressure derivative|bulk modulus derivative"
+
+fulltext_filter:
+  enabled: true
+  provider: openai_compatible
+  base_url: http://localhost:11434/v1   # or http://GPU_HOST:11434/v1 if remote
+  model: qwen3:14b
+  batch_size: 5
+  max_tokens: 8192
+  input_max_chars: 8000
+  criteria: |
+    KEEP only if the excerpt shows this paper reports NEW, extractable equation-of-state
+    (EOS) parameter sets for mantle minerals or related phases—not merely ambient
+    elastic moduli (Ks, G) or the use of existing EOS for pressure calibration.
+
+    KEEP: New Birch-Murnaghan/BM2/BM3/Vinet/Murnaghan (or equivalent) EOS fits with
+    numeric K0, K', V0, zero-pressure volume, bulk modulus, pressure derivative,
+    thermal EOS parameters (e.g., γ0, q, Debye temperature), or primary EOS tables
+    derived in this study.
+
+    EXCLUDE: Papers where EOS values or parameters are only cited from previous
+    studies; EOS models are used only as pressure scales, calibration standards, or
+    reference equations; pure elasticity at ambient conditions; phase diagrams or
+    phase-boundary studies without new EOS fits; seismic modeling; reviews without
+    primary EOS tables; or geochemistry/mineral chemistry papers with no new EOS
+    parameters.
+
+extraction:
+  provider: openai_compatible
+  base_url: http://localhost:11434/v1
+  model: qwen3:14b
+  section_mode: cleaned_markdown
+  markdown_max_chars: 40000
+  schemas:
+    - name: record
+      path: schemas/example/record.json
+      prompt: prompts/example/prompt.md
+      version: "2.1"
+      empty_list_field: eos_entries
+    - name: source
+      path: schemas/example/source.json
+      fill_from: papers_meta
+      skip_when_prior_empty: record
+
+dry_run: true

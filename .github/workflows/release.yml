@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build frontend
+        run: python -m pip install -U pip build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Extract changelog for this tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python <<'PY'
+          import os
+          import pathlib
+          import re
+
+          tag = os.environ["TAG"].removeprefix("v")
+          text = pathlib.Path("CHANGELOG.md").read_text(encoding="utf-8")
+          match = re.search(
+              rf"^## \[{re.escape(tag)}\].*?\n(.*?)(?=^## |\Z)",
+              text,
+              flags=re.M | re.S,
+          )
+          notes = match.group(1).strip() if match else f"Release v{tag}"
+          pathlib.Path("release_notes.md").write_text(notes + "\n", encoding="utf-8")
+          PY
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: release_notes.md
+          files: dist/*
+          fail_on_unmatched_files: true
+          generate_release_notes: false

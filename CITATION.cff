@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: LitCurate
+message: If you use this software, please cite it using these metadata.
+type: software
+authors:
+  - family-names: Shakya
+    given-names: Abin
+    affiliation: Columbia University
+repository-code: https://github.com/MineralsCloud/litcurate
+url: https://mineralscloud.github.io/litcurate/
+license: MIT
+version: 0.1.0
+date-released: "2026-08-21"
+abstract: >-
+  Config-driven pipeline that turns a research goal into a structured
+  literature database, with checkpoint and resume.
+keywords:
+  - literature mining
+  - information extraction
+  - large language models
+  - OpenAlex

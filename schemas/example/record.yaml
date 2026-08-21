@@ -1,0 +1,55 @@
+title: RecordList
+version: "2.1"
+$id: litcurate://schemas/example/record/2.1
+description: >
+  Example extraction schema for static V0, K0, and Kp (K') equation-of-state
+  parameters. Values and units are verbatim from the paper.
+
+fields:
+  eos_entries:
+    array:
+      required: [phase, eos_model, evidence]
+      fields:
+        phase: string
+        composition: string?
+        structure: string?
+        sample: string?
+
+        eos_model: string
+        method: string?
+
+        V0: string|number?
+        V0_unit: string?
+        V0_name: string?
+        V0_basis: enum(unit_cell, molar, unknown)?
+        V0_determination: enum(measured, fitted, assumed, unknown)?
+
+        K0: string|number?
+        K0_unit: string?
+        K0_name: string?
+        K0_type: enum(isothermal, adiabatic, unknown)?
+        K0_determination: enum(fitted, measured, assumed, unknown)?
+
+        Kp: string|number?
+        Kp_unit: string?
+        Kp_name: string?
+        Kp_determination: enum(fitted, fixed, assumed, unknown)?
+
+        T_ref: string|number?
+        T_ref_unit: string?
+        P_ref: string|number?
+        P_ref_unit: string?
+
+        origin: enum(this_study, cited, unknown)?
+
+        evidence: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          optional: true
+
+        extra_info:
+          type: object
+          additionalProperties: true
+          optional: true

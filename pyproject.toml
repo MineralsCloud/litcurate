@@ -1,0 +1,90 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "litcurate"
+dynamic = ["version"]
+description = "Config-driven literature-to-database pipeline with checkpoint and resume"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "Abin Shakya" },
+    { name = "LitCurate contributors" },
+]
+keywords = [
+    "literature-mining",
+    "information-extraction",
+    "llm",
+    "openalex",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "anthropic>=0.40.0",
+    "httpx>=0.27.0",
+    "jsonschema>=4.0.0",
+    "pandas>=2.0.0",
+    "pyarrow>=14.0.0",
+    "pydantic>=2.0.0",
+    "marker-pdf>=1.10.2,<2.0.0",
+    "pydantic-settings>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0",
+    "typer>=0.12.0",
+    "rich>=13.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/MineralsCloud/litcurate"
+Documentation = "https://mineralscloud.github.io/litcurate/"
+Issues = "https://github.com/MineralsCloud/litcurate/issues"
+Changelog = "https://github.com/MineralsCloud/litcurate/blob/main/CHANGELOG.md"
+Citation = "https://github.com/MineralsCloud/litcurate/blob/main/CITATION.cff"
+
+[project.optional-dependencies]
+openalex = ["pyalex>=0.21"]
+dev = ["pytest>=8.0.0", "ruff>=0.6.0"]
+docs = ["mkdocs-material>=9.5.0"]
+
+[project.scripts]
+litcurate = "litcurate.cli:app"
+
+[tool.hatch.version]
+path = "src/litcurate/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/litcurate"]
+
+[tool.hatch.build.targets.sdist]
+only-include = [
+    "src/litcurate",
+    "configs",
+    "schemas",
+    "prompts",
+    "tests",
+    "docs",
+    "mkdocs.yml",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CITATION.cff",
+    "CONTRIBUTING.md",
+    ".env.example",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "eos_entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string"
+          },
+          "composition": {
+            "type": "string"
+          },
+          "structure": {
+            "type": "string"
+          },
+          "sample": {
+            "type": "string"
+          },
+          "eos_model": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "V0": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "V0_unit": {
+            "type": "string"
+          },
+          "V0_name": {
+            "type": "string"
+          },
+          "V0_basis": {
+            "type": "string",
+            "enum": [
+              "unit_cell",
+              "molar",
+              "unknown"
+            ]
+          },
+          "V0_determination": {
+            "type": "string",
+            "enum": [
+              "measured",
+              "fitted",
+              "assumed",
+              "unknown"
+            ]
+          },
+          "K0": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "K0_unit": {
+            "type": "string"
+          },
+          "K0_name": {
+            "type": "string"
+          },
+          "K0_type": {
+            "type": "string",
+            "enum": [
+              "isothermal",
+              "adiabatic",
+              "unknown"
+            ]
+          },
+          "K0_determination": {
+            "type": "string",
+            "enum": [
+              "fitted",
+              "measured",
+              "assumed",
+              "unknown"
+            ]
+          },
+          "Kp": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "Kp_unit": {
+            "type": "string"
+          },
+          "Kp_name": {
+            "type": "string"
+          },
+          "Kp_determination": {
+            "type": "string",
+            "enum": [
+              "fitted",
+              "fixed",
+              "assumed",
+              "unknown"
+            ]
+          },
+          "T_ref": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "T_ref_unit": {
+            "type": "string"
+          },
+          "P_ref": {
+            "type": [
+              "string",
+              "number"
+            ]
+          },
+          "P_ref_unit": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "this_study",
+              "cited",
+              "unknown"
+            ]
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "optional": true
+          },
+          "extra_info": {
+            "type": "object",
+            "additionalProperties": true,
+            "optional": true
+          }
+        },
+        "required": [
+          "phase",
+          "eos_model",
+          "evidence"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "eos_entries"
+  ],
+  "additionalProperties": false,
+  "title": "RecordList",
+  "version": "2.1",
+  "$id": "litcurate://schemas/example/record/2.1",
+  "description": "Example extraction schema (equation-of-state parameters: V0, K0, Kp). Copy and adapt for your domain. Values and units are verbatim from the paper.\n"
+}
