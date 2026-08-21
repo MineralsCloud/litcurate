@@ -1,5 +1,7 @@
 """Tests for PDF download helpers."""
 
+import httpx
+
 from litcurate.clients.pdf_download import (
     PdfCandidate,
     collect_candidates,
@@ -8,7 +10,6 @@ from litcurate.clients.pdf_download import (
     looks_like_pdf_url,
     try_http_download,
 )
-import httpx
 
 
 def test_is_pdf_bytes_magic() -> None:

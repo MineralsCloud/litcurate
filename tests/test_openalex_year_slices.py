@@ -3,8 +3,6 @@
 from pathlib import Path
 
 from litcurate.config import (
-    AbstractFilterConfig,
-    FulltextFilterConfig,
     LlmConfig,
     OpenAlexConfig,
     PipelineConfig,

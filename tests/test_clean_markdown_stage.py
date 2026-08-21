@@ -6,10 +6,10 @@ from pathlib import Path
 
 from litcurate.config import load_config
 from litcurate.pipeline import PipelineRunner
+from litcurate.run_store import open_run_store
 from litcurate.stages.base import StageContext
 from litcurate.stages.clean_markdown import CleanMarkdownStage
 from litcurate.stages.utils import read_json, write_json
-from litcurate.run_store import open_run_store
 
 
 def _make_ctx(tmp_path: Path, config_path: Path) -> StageContext:
@@ -32,7 +32,6 @@ def test_clean_manifest_flags_heavy_strip(tmp_path: Path) -> None:
     ctx = _make_ctx(tmp_path, config_path)
 
     md_dir = ctx.artifact("markdown")
-    clean_dir = ctx.artifact("markdown_clean")
     md_dir.mkdir(parents=True, exist_ok=True)
 
     source = "x" * 40 + "\n\n## References\n\n" + ("Smith et al. (2020).\n" * 20)

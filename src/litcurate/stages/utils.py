@@ -8,8 +8,6 @@ from typing import Any
 
 import pandas as pd
 
-from litcurate.doi import normalize_doi, paper_id_from_doi
-
 
 def write_json(path: Path, payload: Any) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)

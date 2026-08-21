@@ -86,5 +86,17 @@ only-include = [
 line-length = 100
 target-version = "py310"
 
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "F",  # Pyflakes
+    "W",  # pycodestyle warnings
+    "I",  # isort
+]
+ignore = [
+    "E501",  # line length is enforced by ruff format / line-length
+    "E712",  # pandas boolean columns need == True / == False
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

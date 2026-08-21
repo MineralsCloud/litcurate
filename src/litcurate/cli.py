@@ -11,14 +11,14 @@ from rich.console import Console
 from rich.table import Table
 
 from litcurate import __version__
-from litcurate.constants import STAGE_ORDER, DEFAULT_RUNS_DIR
+from litcurate.constants import DEFAULT_RUNS_DIR, STAGE_ORDER
 from litcurate.env import load_project_env
 from litcurate.ingest_pdfs import ingest_pdfs
+from litcurate.inspect import show_stage_artifact
 from litcurate.merge_papers_filtered import (
     filtered_parquet_for_run,
     merge_papers_filtered,
 )
-from litcurate.inspect import show_stage_artifact
 from litcurate.paths import (
     list_manifest_json_files,
     normalize_run_manifests,

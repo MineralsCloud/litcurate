@@ -14,8 +14,8 @@ from litcurate.clients.literature import (
     normalize_search_paper,
     paper_dedupe_key,
 )
-from litcurate.paths import project_runs_dir, run_directory
 from litcurate.doi import paper_id_from_doi
+from litcurate.paths import project_runs_dir, run_directory
 
 SEARCH_RAW_DIRS = ("openalex_raw", "consensus_raw")
 

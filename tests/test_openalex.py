@@ -9,7 +9,6 @@ from litcurate.clients.literature import (
     paper_dedupe_key,
 )
 
-
 SAMPLE_OPENALEX_RESPONSE = {
     "provider": "openalex",
     "query_id": "q1",

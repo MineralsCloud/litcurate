@@ -6,8 +6,11 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import pandas as pd
+
 from litcurate.config import ExtractionSchemaRef, load_config
 from litcurate.schema_spec import load_schema_spec
+from litcurate.source_from_meta import load_papers_meta_index
 from litcurate.stages.base import StageContext
 from litcurate.stages.extract_schema import (
     ExtractSchemaStage,
@@ -16,9 +19,7 @@ from litcurate.stages.extract_schema import (
     _extract_with_llm,
     _write_failure_record,
 )
-from litcurate.source_from_meta import load_papers_meta_index
 from litcurate.stages.utils import read_json
-import pandas as pd
 
 
 def test_extract_schema_writes_empty_manifest_when_no_papers_are_eligible(

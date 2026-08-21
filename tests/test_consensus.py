@@ -8,7 +8,6 @@ from litcurate.clients.consensus import (
     paper_dedupe_key,
 )
 
-
 SAMPLE_RESPONSE = {
     "results": [
         {

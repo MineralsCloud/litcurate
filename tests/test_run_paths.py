@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from litcurate.config import load_config
 from litcurate.paths import (
     normalize_run_manifests,
     normalize_stored_path,
@@ -12,10 +13,9 @@ from litcurate.paths import (
     rewrite_manifest_paths,
     store_run_path,
 )
-from litcurate.stages.convert_marker import _resolve_pdf_path
-from litcurate.stages.base import StageContext
-from litcurate.config import load_config
 from litcurate.run_store import open_run_store
+from litcurate.stages.base import StageContext
+from litcurate.stages.convert_marker import _resolve_pdf_path
 
 
 def test_store_and_resolve_relative_path(tmp_path: Path) -> None:
