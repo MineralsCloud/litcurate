@@ -1,0 +1,20 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+.DS_Store
+
+# Virtualenv and secrets
+.venv/
+.env
+
+# Pipeline outputs (created when you run litcurate)
+runs/
+
+# MkDocs build output
+site/
